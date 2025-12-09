@@ -1,390 +1,221 @@
 "use client"
 
-import type React from "react"
-
-import { AppSidebar } from "@/components/app-sidebar"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { NavigationMenu } from "@/components/navigation-menu"
+import { DashboardHeader } from "@/components/dashboard-header"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Phone, Mail, Car, Pencil } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import Link from "next/link"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Search, Plus, Mail, Phone, Car, Clock } from "lucide-react"
 import { useState } from "react"
+import { NewCustomerModal } from "@/components/modals/new-customer-modal"
+import { CustomerDetailModal } from "@/components/modals/customer-detail-modal"
+import { VehicleSearch } from "@/components/vehicle-search"
 
-type Customer = {
-  id: number
-  name: string
-  phone: string
-  email: string
-  vehicles: number
-  lastService: string
-  totalSpent: string
-  address?: string
-  city?: string
-  postalCode?: string
-  notes?: string
-}
+const mockCustomers = [
+  {
+    id: 1,
+    name: "Ahmet Yılmaz",
+    email: "ahmet@email.com",
+    phone: "+90 532 123 4567",
+    vehicles: ["BMW 320i - 34 ABC 123"],
+    totalServices: 12,
+    lastService: "5 gün önce",
+    totalSpent: "₺24,500",
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "Ayşe Demir",
+    email: "ayse@email.com",
+    phone: "+90 533 456 7890",
+    vehicles: ["Mercedes C180 - 06 XYZ 456"],
+    totalServices: 8,
+    lastService: "2 hafta önce",
+    totalSpent: "₺18,900",
+    status: "active",
+  },
+  {
+    id: 3,
+    name: "Mehmet Kaya",
+    email: "mehmet@email.com",
+    phone: "+90 535 789 0123",
+    vehicles: ["Audi A4 - 35 DEF 789", "VW Golf - 35 GHI 012"],
+    totalServices: 15,
+    lastService: "3 gün önce",
+    totalSpent: "₺32,100",
+    status: "vip",
+  },
+  {
+    id: 4,
+    name: "Fatma Çelik",
+    email: "fatma@email.com",
+    phone: "+90 536 234 5678",
+    vehicles: ["Toyota Corolla - 41 JKL 345"],
+    totalServices: 5,
+    lastService: "1 ay önce",
+    totalSpent: "₺8,500",
+    status: "active",
+  },
+  {
+    id: 5,
+    name: "Ali Öztürk",
+    email: "ali@email.com",
+    phone: "+90 537 567 8901",
+    vehicles: ["Ford Focus - 16 MNO 678"],
+    totalServices: 3,
+    lastService: "3 ay önce",
+    totalSpent: "₺4,200",
+    status: "inactive",
+  },
+]
 
 export default function CustomersPage() {
-  const [open, setOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [newCustomerModalOpen, setNewCustomerModalOpen] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState<(typeof mockCustomers)[0] | null>(null)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
 
-  const customers: Customer[] = [
-    {
-      id: 1,
-      name: "Ali Yılmaz",
-      phone: "+90 532 123 4567",
-      email: "ali.yilmaz@email.com",
-      vehicles: 2,
-      lastService: "15 Kas 2024",
-      totalSpent: "₺12,450",
-      address: "Atatürk Mah. Cumhuriyet Cad. No:45/3",
-      city: "İstanbul",
-      postalCode: "34750",
-      notes: "VIP müşteri",
-    },
-    {
-      id: 2,
-      name: "Ayşe Kaya",
-      phone: "+90 533 234 5678",
-      email: "ayse.kaya@email.com",
-      vehicles: 1,
-      lastService: "28 Kas 2024",
-      totalSpent: "₺8,920",
-    },
-    {
-      id: 3,
-      name: "Mehmet Öz",
-      phone: "+90 534 345 6789",
-      email: "mehmet.oz@email.com",
-      vehicles: 3,
-      lastService: "02 Ara 2024",
-      totalSpent: "₺24,780",
-    },
-    {
-      id: 4,
-      name: "Fatma Demir",
-      phone: "+90 535 456 7890",
-      email: "fatma.demir@email.com",
-      vehicles: 1,
-      lastService: "05 Ara 2024",
-      totalSpent: "₺6,340",
-    },
-    {
-      id: 5,
-      name: "Can Özkan",
-      phone: "+90 536 567 8901",
-      email: "can.ozkan@email.com",
-      vehicles: 2,
-      lastService: "12 Eki 2024",
-      totalSpent: "₺18,560",
-    },
-  ]
+  const filteredCustomers = mockCustomers.filter(
+    (customer) =>
+      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customer.phone.includes(searchQuery),
+  )
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("[v0] New customer form submitted")
-    setOpen(false)
-  }
-
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("[v0] Customer edit form submitted", selectedCustomer)
-    setEditOpen(false)
-    setSelectedCustomer(null)
-  }
-
-  const handleEdit = (customer: Customer) => {
+  const handleOpenDetail = (customer: (typeof mockCustomers)[0]) => {
     setSelectedCustomer(customer)
-    setEditOpen(true)
+    setDetailModalOpen(true)
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Müşteriler</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="flex flex-1 flex-col gap-6 p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Müşteri Yönetimi</h1>
-              <p className="text-muted-foreground">Müşteri ve araç bilgilerini yönetin</p>
-            </div>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full md:w-auto">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Yeni Müşteri Ekle
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Yeni Müşteri Ekle</DialogTitle>
-                  <DialogDescription>Yeni müşteri bilgilerini girin. Tüm alanlar zorunludur.</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit}>
-                  <div className="grid gap-6 py-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="grid gap-2">
-                        <Label htmlFor="firstName">Ad *</Label>
-                        <Input id="firstName" placeholder="Ali" required />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="lastName">Soyad *</Label>
-                        <Input id="lastName" placeholder="Yılmaz" required />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="grid gap-2">
-                        <Label htmlFor="phone">Telefon *</Label>
-                        <Input id="phone" type="tel" placeholder="+90 532 123 4567" required />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="email">E-posta</Label>
-                        <Input id="email" type="email" placeholder="ornek@email.com" />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="address">Adres</Label>
-                      <Textarea id="address" placeholder="Mahalle, sokak, bina no..." rows={3} />
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="grid gap-2">
-                        <Label htmlFor="city">Şehir</Label>
-                        <Input id="city" placeholder="İstanbul" />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="postalCode">Posta Kodu</Label>
-                        <Input id="postalCode" placeholder="34000" />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="notes">Notlar</Label>
-                      <Textarea id="notes" placeholder="Müşteri hakkında özel notlar..." rows={2} />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                      İptal
-                    </Button>
-                    <Button type="submit">Müşteriyi Kaydet</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+    <div className="flex h-screen bg-background">
+      <aside className="w-64 border-r border-border p-6 flex flex-col gap-6">
+        <div className="flex items-center gap-2">
+          <div className="bg-primary rounded-lg p-2">
+            <Car className="h-5 w-5 text-primary-foreground" />
           </div>
-
-          <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Müşteri Düzenle</DialogTitle>
-                <DialogDescription>Müşteri bilgilerini güncelleyin.</DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleEditSubmit}>
-                <div className="grid gap-6 py-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="grid gap-2">
-                      <Label htmlFor="edit-name">Ad Soyad *</Label>
-                      <Input id="edit-name" defaultValue={selectedCustomer?.name} placeholder="Ali Yılmaz" required />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="edit-phone">Telefon *</Label>
-                      <Input
-                        id="edit-phone"
-                        type="tel"
-                        defaultValue={selectedCustomer?.phone}
-                        placeholder="+90 532 123 4567"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="edit-email">E-posta</Label>
-                    <Input
-                      id="edit-email"
-                      type="email"
-                      defaultValue={selectedCustomer?.email}
-                      placeholder="ornek@email.com"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="edit-address">Adres</Label>
-                    <Textarea
-                      id="edit-address"
-                      defaultValue={selectedCustomer?.address}
-                      placeholder="Mahalle, sokak, bina no..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="grid gap-2">
-                      <Label htmlFor="edit-city">Şehir</Label>
-                      <Input id="edit-city" defaultValue={selectedCustomer?.city} placeholder="İstanbul" />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="edit-postalCode">Posta Kodu</Label>
-                      <Input id="edit-postalCode" defaultValue={selectedCustomer?.postalCode} placeholder="34000" />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="edit-notes">Notlar</Label>
-                    <Textarea
-                      id="edit-notes"
-                      defaultValue={selectedCustomer?.notes}
-                      placeholder="Müşteri hakkında özel notlar..."
-                      rows={2}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
-                    İptal
-                  </Button>
-                  <Button type="submit">Değişiklikleri Kaydet</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-
-          {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Toplam Müşteri</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">248</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Kayıtlı Araç</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">387</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Bu Ay Aktif</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">89</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Toplam Ciro</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">₺1.2M</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Customer List */}
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <CardTitle>Müşteri Listesi</CardTitle>
-                  <CardDescription>Tüm kayıtlı müşterilerin detaylı listesi</CardDescription>
-                </div>
-                <div className="relative w-full md:w-80">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Müşteri ara..." className="pl-9" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Müşteri Adı</TableHead>
-                    <TableHead>İletişim</TableHead>
-                    <TableHead>Araçlar</TableHead>
-                    <TableHead>Son Servis</TableHead>
-                    <TableHead>Toplam Harcama</TableHead>
-                    <TableHead className="text-right">İşlem</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {customers.map((customer) => (
-                    <TableRow key={customer.id}>
-                      <TableCell className="font-medium">{customer.name}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Phone className="h-3 w-3 text-muted-foreground" />
-                            <span>{customer.phone}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Mail className="h-3 w-3" />
-                            <span>{customer.email}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="gap-1">
-                          <Car className="h-3 w-3" />
-                          {customer.vehicles}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{customer.lastService}</TableCell>
-                      <TableCell className="font-medium">{customer.totalSpent}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(customer)}>
-                            <Pencil className="mr-1 h-3 w-3" />
-                            Düzenle
-                          </Button>
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/customers/${customer.id}`}>Detaylar</Link>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <span className="font-bold text-xl">CarService</span>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+        <NavigationMenu />
+      </aside>
+
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <DashboardHeader />
+
+        <div className="flex-1 overflow-auto p-8">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-balance">Müşteriler</h1>
+                <p className="text-muted-foreground mt-1">Müşteri bilgilerini görüntüleyin ve yönetin</p>
+              </div>
+              <Button onClick={() => setNewCustomerModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Yeni Müşteri
+              </Button>
+            </div>
+
+            <VehicleSearch />
+
+            <Card>
+              <CardHeader>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Müşteri ara (isim, email, telefon)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredCustomers.map((customer) => (
+                    <Card key={customer.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-4 flex-1">
+                            <Avatar className="h-12 w-12">
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {customer.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex-1 space-y-3">
+                              <div className="flex items-center gap-3">
+                                <h3 className="font-semibold text-lg">{customer.name}</h3>
+                                <Badge
+                                  variant={
+                                    customer.status === "vip"
+                                      ? "default"
+                                      : customer.status === "active"
+                                        ? "secondary"
+                                        : "outline"
+                                  }
+                                >
+                                  {customer.status === "vip" ? "VIP" : customer.status === "active" ? "Aktif" : "Pasif"}
+                                </Badge>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Mail className="h-4 w-4" />
+                                  <span>{customer.email}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Phone className="h-4 w-4" />
+                                  <span>{customer.phone}</span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-1">
+                                {customer.vehicles.map((vehicle, idx) => (
+                                  <div key={idx} className="flex items-center gap-2 text-sm">
+                                    <Car className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">{vehicle}</span>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="flex items-center gap-6 text-sm pt-2 border-t">
+                                <div>
+                                  <span className="text-muted-foreground">Toplam Servis: </span>
+                                  <span className="font-medium">{customer.totalServices}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Toplam Harcama: </span>
+                                  <span className="font-medium">{customer.totalSpent}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3 text-muted-foreground" />
+                                  <span className="text-muted-foreground">{customer.lastService}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <Button variant="outline" size="sm" onClick={() => handleOpenDetail(customer)}>
+                            Detaylar
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+
+      <NewCustomerModal open={newCustomerModalOpen} onOpenChange={setNewCustomerModalOpen} />
+      <CustomerDetailModal open={detailModalOpen} onOpenChange={setDetailModalOpen} customer={selectedCustomer} />
+    </div>
   )
 }

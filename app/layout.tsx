@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "CarService Pro - Servis Yönetim Paneli",
-  description: "Profesyonel Araba Bakım & Onarım Servisi Yönetim Sistemi",
+  title: "CarService - Araç Servis Yönetimi",
+  description: "Modern ve profesyonel araç servis yönetim sistemi",
   generator: "v0.app",
   icons: {
     icon: [
@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="tr">
       <body className={`font-sans antialiased`}>
         {children}
         <Analytics />

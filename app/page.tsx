@@ -1,253 +1,133 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, Car, CheckCircle2, Clock, Package, TrendingUp } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+"use client"
 
-export default async function HomePage() {
-  const supabase = await createClient()
+import type React from "react"
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+import { useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Zap, Eye, EyeOff } from "lucide-react"
 
-  if (!user) {
-    redirect("/auth/login")
-  }
+export default function LoginPage() {
+  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-  // Get user profile with organization
-  const { data: profile } = await supabase
-    .from("users")
-    .select("*, organization:organizations(*)")
-    .eq("id", user.id)
-    .single()
-
-  if (!profile?.organization) {
-    redirect("/auth/error?error=no_organization")
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log("Login:", { email, password })
+    router.push("/dashboard")
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={profile} organization={profile.organization} />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Ana Panel</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="flex flex-1 flex-col gap-6 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Ana Panel</h1>
-              <p className="text-muted-foreground">Servis operasyonlarınızın genel görünümü</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-background p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <Zap className="w-6 h-6 text-primary-foreground" />
             </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Bugün</p>
-              <p className="text-lg font-semibold">
-                {new Date().toLocaleDateString("tr-TR", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
+            <span className="text-2xl font-bold">CarService</span>
           </div>
-
-          {/* Metric Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Günlük Giriş</CardTitle>
-                <Car className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <TrendingUp className="h-3 w-3 text-chart-3" />
-                  <span className="text-chart-3">+3</span> dünden
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Açık İşler</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">28</div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <span className="text-chart-4">7</span> parça bekliyor
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tamamlanan</CardTitle>
-                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">156</div>
-                <p className="text-xs text-muted-foreground mt-1">Bu ay</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Aylık Gelir</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">₺284,560</div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <TrendingUp className="h-3 w-3 text-chart-3" />
-                  <span className="text-chart-3">+12%</span> geçen aydan
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Technician Workload */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Usta İş Yoğunluğu</CardTitle>
-                <CardDescription>Teknisyenlerin güncel iş durumu</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">Ahmet Yılmaz</span>
-                    <span className="text-muted-foreground">5/6 iş</span>
-                  </div>
-                  <Progress value={83} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">Mehmet Kaya</span>
-                    <span className="text-muted-foreground">4/6 iş</span>
-                  </div>
-                  <Progress value={66} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">Ali Demir</span>
-                    <span className="text-muted-foreground">6/6 iş</span>
-                  </div>
-                  <Progress value={100} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">Mustafa Şahin</span>
-                    <span className="text-muted-foreground">3/6 iş</span>
-                  </div>
-                  <Progress value={50} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Critical Alerts */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Kritik Uyarılar</CardTitle>
-                <CardDescription>Acil dikkat gerektiren durumlar</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-start gap-3 rounded-lg border p-3">
-                  <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">3 İş Emri Gecikmiş</p>
-                    <p className="text-xs text-muted-foreground">Teslimat tarihleri geçmiş durumda</p>
-                  </div>
-                  <Badge variant="destructive">Acil</Badge>
-                </div>
-                <div className="flex items-start gap-3 rounded-lg border p-3">
-                  <Package className="h-5 w-5 text-chart-4 mt-0.5" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">12 Parça Kritik Seviyede</p>
-                    <p className="text-xs text-muted-foreground">Stok yenilenmesi gerekiyor</p>
-                  </div>
-                  <Badge variant="secondary">Uyarı</Badge>
-                </div>
-                <div className="flex items-start gap-3 rounded-lg border p-3">
-                  <Clock className="h-5 w-5 text-chart-4 mt-0.5" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">5 Parça Sipariş Bekleniyor</p>
-                    <p className="text-xs text-muted-foreground">Tedarikçiden teslimat bekleniyor</p>
-                  </div>
-                  <Badge variant="outline">Bekliyor</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Work Orders */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Son İş Emirleri</CardTitle>
-              <CardDescription>En son işleme alınan servis talepleri</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  {
-                    plate: "34 ABC 123",
-                    customer: "Ali Yılmaz",
-                    service: "Yağ Değişimi + Filtre",
-                    status: "İncelemede",
-                    statusColor: "bg-chart-2",
-                  },
-                  {
-                    plate: "06 XYZ 789",
-                    customer: "Ayşe Kaya",
-                    service: "Fren Sistemi Onarımı",
-                    status: "Parça Bekliyor",
-                    statusColor: "bg-chart-4",
-                  },
-                  {
-                    plate: "35 DEF 456",
-                    customer: "Mehmet Öz",
-                    service: "Motor Arıza Tespiti",
-                    status: "Onarımda",
-                    statusColor: "bg-chart-1",
-                  },
-                  {
-                    plate: "16 GHI 321",
-                    customer: "Fatma Demir",
-                    service: "Klima Bakımı",
-                    status: "Testte",
-                    statusColor: "bg-chart-3",
-                  },
-                ].map((order, index) => (
-                  <div key={index} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                        <Car className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{order.plate}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {order.customer} - {order.service}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge className={order.statusColor + " text-white"}>{order.status}</Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <h1 className="text-3xl font-bold text-balance">Hesabınıza Giriş Yapın</h1>
+          <p className="text-muted-foreground mt-2">Servis operasyonlarınızı yönetin</p>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+
+        <Card className="border-border/50 shadow-lg">
+          <CardHeader>
+            <CardTitle>Giriş Yap</CardTitle>
+            <CardDescription>E-posta ve şifrenizi girerek devam edin</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">E-posta</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="ornek@firma.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Şifre</Label>
+                  <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                    Şifremi Unuttum?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-11 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox id="remember" />
+                <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
+                  Beni hatırla
+                </label>
+              </div>
+
+              <Button type="submit" className="w-full h-11" size="lg">
+                Giriş Yap
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex-col space-y-4">
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">veya</span>
+              </div>
+            </div>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Hesabınız yok mu?{" "}
+              <Link href="/signup" className="text-primary font-medium hover:underline">
+                Ücretsiz Başlayın
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
+
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          Giriş yaparak{" "}
+          <Link href="/terms" className="underline hover:text-foreground">
+            Kullanım Şartları
+          </Link>{" "}
+          ve{" "}
+          <Link href="/privacy" className="underline hover:text-foreground">
+            Gizlilik Politikası
+          </Link>
+          'nı kabul etmiş olursunuz.
+        </p>
+      </div>
+    </div>
   )
 }
